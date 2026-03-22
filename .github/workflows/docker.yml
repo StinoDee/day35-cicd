@@ -22,10 +22,16 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. Build Docker image
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/day35-cicd .
+      # 3.- Name: Set up Docker image tag
+  id: vars
+  run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      # 4. Push Docker image
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/day35-cicd
+    # 4. Name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/day35-cicd:latest \
+                 -t ${{ secrets.DOCKER_USERNAME }}/day35-cicd:$TAG .
+
+    # 5. Name: Push Docker image
+         run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/day35-cicd:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/day35-cicd:$TAG
