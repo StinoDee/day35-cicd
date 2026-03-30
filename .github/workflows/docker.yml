@@ -34,14 +34,3 @@ jobs:
             docker stop adissimpact || true
             docker rm adissimpact || true
             docker run -d --name adissimpact -p 80:80 yourusername/adissimpact:latest
-
-server {
-    listen 80;
-    server_name api.adissimpact.com;
-
-    location / {
-        proxy_pass http://localhost:5000; # Your API container port
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
