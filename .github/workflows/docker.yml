@@ -34,3 +34,19 @@ jobs:
             docker stop adissimpact || true
             docker rm adissimpact || true
             docker run -d --name adissimpact -p 80:80 yourusername/adissimpact:latest
+            
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker pull stinodee/day35-cicd:latest
+            docker rm -f myapp || true
+            docker run -d -p 8080:80 --name myapp stinodee/day35-cicd:latest
