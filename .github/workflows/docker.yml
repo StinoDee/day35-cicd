@@ -16,6 +16,9 @@ jobs:
       - name: Build Docker image
         run: docker build -t stinodee/day35-cicd:latest .
 
+      - name: Debug HOST
+        run: echo "HOST=${{ secrets.SERVER_HOST }}"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
