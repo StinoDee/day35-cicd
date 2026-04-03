@@ -1,32 +1,25 @@
-name: Build and Deploy
+- name: Deploy via SSH
+  uses: appleboy/ssh-action@v1.0.3
+  with:
+    host: ${{ secrets.SERVER_HOST }}
+    username: ${{ secrets.SERVER_USER }}
+    key: ${{ secrets.SSH_KEY }}
+    port: 22
+    script: |
+      docker pull stinodee/day35-cicd:latest
 
-on:
-  push:
-    branches:
-      - main
+      # Run new container on different port
+      docker run -d -p 8081:80 --name myapp_new stinodee/day35-cicd:latest
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+      # Wait a bit for container to be ready
+      sleep 5
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      # Stop old container
+      docker rm -f myapp || true
 
-      - name: Build Docker image
-        run: docker build -t stinodee/day35-cicd:latest .
+      # Rename new container to production
+      docker rename myapp_new myapp
 
-      - name: Debug HOST
-        run: echo "HOST=${{ secrets.SERVER_HOST }}"
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 22
-          script: |
-            docker pull stinodee/day35-cicd:latest
-            docker rm -f myapp || true
-            docker run -d -p 8080:80 --name myapp stinodee/day35-cicd:latest
+      # Switch back to port 8080
+      docker stop myapp
+      docker run -d -p 8080:80 --name myapp stinodee/day35-cicd:latest
