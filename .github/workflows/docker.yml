@@ -40,7 +40,13 @@ jobs:
             sleep 5
 
             # Health check
-            curl -f http://localhost:$NEW_PORT || exit 1
+            if curl -f http://localhost:$NEW_PORT; then
+              echo "New version healthy ✅"
+            else
+              echo "Health check failed ❌ Rolling back..."
+              docker rm -f $NEW_CONTAINER
+              exit 1
+            fi
 
             # Switch Nginx
             sudo sed -i "s/$OLD_PORT/$NEW_PORT/g" /etc/nginx/sites-enabled/default
